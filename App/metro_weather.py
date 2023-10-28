@@ -1,20 +1,24 @@
 import requests
-import coverttime as conv_date
+
+import converttime as conv_date
 
 
-def get_weather_data(api_key, city):
+def get_weather_data(latitude, longitude, api_key):
     # Make a GET request to the OpenWeatherMap API
-    response = requests.get(f'http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}')
+    # response = requests.get(f'http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}')
+    response = requests.get(f'https://api.openweathermap.org/data/2.5/weather?lat={latitude}'
+                            f'&lon={longitude}&appid={api_key}')
 
     # Check if the request was successful (status code 200)
     if response.status_code == 200:
         # Extract the weather data from the response
         weather_data = response.json()
+        # print(weather_data)
 
         # Access specific weather information
         longitude = weather_data['coord']['lon']
         latitude = weather_data['coord']['lat']
-        dateandtime = conv_date.covert_datetime(weather_data['dt'])
+        dateandtime = conv_date.convert_datetime(weather_data['dt'])
         temperature = weather_data['main']['temp']
         temperature_min = weather_data['main']['temp_min']
         temperature_max = weather_data['main']['temp_max']
@@ -22,8 +26,8 @@ def get_weather_data(api_key, city):
         wind_speed = weather_data['wind']['speed']
         description = weather_data['weather'][0]['description']
         clouds = weather_data['clouds']['all']
-        sunrise = conv_date.covert_datetime(weather_data['sys']['sunrise'])
-        sunset = conv_date.covert_datetime(weather_data['sys']['sunset'])
+        sunrise = conv_date.convert_datetime(weather_data['sys']['sunrise'])
+        sunset = conv_date.convert_datetime(weather_data['sys']['sunset'])
         pressure = weather_data['main']['pressure']
         sea_level = weather_data['main']['sea_level']
         grnd_level = weather_data['main']['grnd_level']
@@ -34,6 +38,8 @@ def get_weather_data(api_key, city):
     else:
         print('Failed to retrieve weather data.')
         return None, None, None
+
+# Get current location
 
 # import requests
 # api_key = '8d4e7706e24a9f1fc59b0b30b7964887'

@@ -1,0 +1,9 @@
+{'lat': 6.8412384, 'lon': 80.0034457, 'tz': '+05: 30', 'date': '2023-10-27', 'units': 'standard', 'cloud_cover': {'afternoon': 92.01
+    }, 'humidity': {'afternoon': 61.6
+    }, 'precipitation': {'total': 49.61
+    }, 'temperature': {'min': 296.59, 'max': 304.24, 'afternoon': 304.24, 'night': 297.36, 'evening': 298.22, 'morning': 297.08
+    }, 'pressure': {'afternoon': 1010.13
+    }, 'wind': {'max': {'speed': 2.98, 'direction': 259.36
+        }
+    }
+}

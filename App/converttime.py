@@ -1,7 +1,7 @@
 import datetime
 
 
-def covert_datetime(timestamp):
+def convert_datetime(timestamp):
     # Convert the Unix timestamp to a datetime object
     datetime_obj = datetime.datetime.fromtimestamp(timestamp)
 
