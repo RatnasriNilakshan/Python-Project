@@ -2,9 +2,9 @@ import datetime
 
 import requests
 
+from datetime import datetime
+from datetime import timedelta
 
-# Replace 'CITY_NAME' with the name of the city for which you want weather data
-# city = "Homagama"
 
 # Make a GET request to the OpenWeatherMap API
 def get_avg_weather(lat, lon, api_key):
@@ -43,7 +43,7 @@ def find_avg_weather(json_data, days):
     # Sun shine time in seconds
     sun_shine_time = sun_set - sun_rise
     # Convert time difference to a timedelta object
-    time_difference_timedelta = datetime.timedelta(seconds=sun_shine_time)
+    time_difference_timedelta = timedelta(seconds=sun_shine_time)
     # Store the time difference as a tuple
     time_difference_tuple = (time_difference_timedelta.days, time_difference_timedelta.seconds // 3600,
                              (time_difference_timedelta.seconds // 60) % 60, time_difference_timedelta.seconds % 60)
@@ -79,3 +79,7 @@ def find_avg_weather(json_data, days):
 
     return mean_temperature, mean_humidity, total_rainfall, mean_wind_speed, sun_shine, sun_shine_time, \
         mean_sea_level, u_day, u_night, mean_pre_level, temperatures, humidity, wind_speed, date_time
+
+# temp_mean, hum_mean, sea_level, shine_time, wind_speed, latitude, u_day, u_night
+
+# get the saved metro data

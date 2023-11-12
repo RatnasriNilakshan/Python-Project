@@ -82,11 +82,11 @@ def real_time_weather(rec_time, tag_key):
             print("Soil moisture : ", soil)
             # print("time:", time)
 
-            temp = temp_outlier(temp)
-            humi = humi_outlier(humi)
-            light = light_outlier(light)
-            soil = soil_outlier(soil)
-            pressure = pressure_outlier(pressure)
+            temp = temp_outlier(temp).interpolate(method="linear", inplace=True)
+            humi = humi_outlier(humi).interpolate(method="linear", inplace=True)
+            light = light_outlier(light).interpolate(method="linear", inplace=True)
+            soil = soil_outlier(soil).interpolate(method="linear", inplace=True)
+            pressure = pressure_outlier(pressure).interpolate(method="linear", inplace=True)
 
             temperature = round(sum(temp) / len(temp), 2)
             humidity = round(sum(humi) / len(humi), 2)

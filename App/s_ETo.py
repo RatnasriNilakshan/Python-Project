@@ -55,7 +55,7 @@ def calculate_s_et0(temperature, humidity, atmospheric_pressure, wind_speed, lig
     cp = 0.001013  # Specific heat at constant pressure [MJkg^-1`C^-1]
     epsilon = 0.622  # ratio molecular weight of water vapour/day air
 
-    gamma = (cp * atmospheric_pressure/10) / (epsilon * lamda)
+    gamma = (cp * atmospheric_pressure) / (epsilon * lamda)
     print("pressure :", atmospheric_pressure)
     print("gamma : ", gamma)
 

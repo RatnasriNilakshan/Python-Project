@@ -2,8 +2,10 @@ import streamlit as st
 import metro_weather as mw
 import avg_metro_weather as amw
 import npk as npk
+import weather_thread as wt
 import requests
 import pandas as pd
+import pytz
 # import time
 # import matplotlib.pyplot as plt
 # import numpy as np
@@ -35,7 +37,8 @@ from datetime import datetime, timedelta
 
 api_key = '8d4e7706e24a9f1fc59b0b30b7964887'  # API key to openweather
 Plant_varieties = ["Chilli", "Tomato"]  # The plant categories
-cities = ["Homagama", "Colombo", 'Jaffna', 'Kandy', "Mannar", "Anuradhapura"]  # Names of cities that can find from openweather
+cities = ["Homagama", "Colombo", 'Jaffna', 'Kandy', "Mannar",
+          "Anuradhapura"]  # Names of cities that can find from openweather
 m_days = [1, 2, 3, 4, 5]  # Number of days need to collect weather data, maximum 5
 s_days = ["-1d", "-2d", "-3d", "-4d", "-5d", "-6d", "-7d", "-10d", "-12d", "-15d", "-30d"]
 
@@ -86,6 +89,7 @@ current_weather_check = st.sidebar.checkbox("Current Weather", value=True)
 refresh_current_weather = st.sidebar.button("Refresh 🔄")
 # sensor node selection
 sensors = ["FYP0001", "FYP0002"]
+weather_station = ["FYP0003"]
 sensor_node = st.sidebar.selectbox("Selection the sensor node", sensors)
 location = st.sidebar.selectbox("Select your area", cities, index=0)  # Define the location
 m_days_count = st.sidebar.selectbox("Select number of days (future)", m_days,
@@ -104,7 +108,7 @@ filed_area = st.sidebar.number_input("Enter the field area in meter square", min
 current_date = datetime.now().date()
 new_date = current_date - timedelta(days=7)
 planted_date = st.sidebar.date_input("Enter the planting date", value=new_date)
-
+plantation_days = (current_date - planted_date).days
 # Show the irrigation menu
 # if show_irrigation:
 st.sidebar.header("Irrigation Details")
@@ -159,7 +163,7 @@ def get_crop_coefficient(csv_file):
     df = pd.read_csv(csv_file, index_col='Crop')
     crop = plant_type
     # print(crop)
-    days_diff = (current_date - planted_date).days
+    days_diff = plantation_days
     age = define_age_of_crop(crop, days_diff)
     # print("Age", age)
     # print(df.at[crop, age])
@@ -247,12 +251,16 @@ if not show_current_weather:
 # if show_avg_weather:
 
 # NPK values
-nitrogen, phosphorus, potassium = npk.get_crop_npk(plant_type, (current_date - planted_date).days)
+
 
 if Latitude is not None and Longitude is not None:
     # st.write("Latitude:", Latitude)
     # st.write("Longitude:", Longitude)
+    # last_weather_time = amw.last_weather_time(time_diff_irr, location)
+    # time_diff_data = datetime.now(pytz.timezone('Asia/Colombo')) - last_weather_time
+    # call api to collect the data
     avg_weather_data = amw.get_avg_weather(Latitude, Longitude, api_key)
+    # avg_weather_data = amw.get_avg_weather(Latitude, Longitude, api_key)
     (mean_temperature, mean_humidity, total_rainfall, mean_wind_speed, sun_shine, sun_shine_time,
      mean_sea_level, u_day, u_night, mean_pre_level, m_temperatures, m_humidity,
      m_wind_speed, m_date_time) = amw.find_avg_weather(avg_weather_data, m_days_count)
@@ -308,7 +316,7 @@ if Latitude is not None and Longitude is not None:
 
     st.header("Data from Sensors")
     s_temp, s_humidity, s_soil_moisture, s_light, temp_list, humi_list, s_time, s_pressure, s_soil_list = (
-        s_w.real_time_weather(f"{time_diff_irr}d", sensors[1]))
+        s_w.real_time_weather(f"{time_diff_irr}d", weather_station))
     # Evapotranspiration from sensor
     s_eto = s_ETo.calculate_s_et0(temp_list, humi_list, s_pressure, mean_wind_speed, s_light, time_diff_irr)
     # Calculate crop water requirement for sensor
@@ -353,62 +361,13 @@ if Latitude is not None and Longitude is not None:
 else:
     st.write("Location not found or error occurred.")
 
-# Nutrients readings
-st.header("Nutrients")
-st.header("NPKs")
-st.write("Nitrogen : ", nitrogen)
-st.write("Phosphorus : ", phosphorus)
-st.write("Potassium : ", potassium)
-
-g_Col1, g_Col2 = st.columns(2)
-m_date_and_time = []
-for i in m_date_time:
-    m_date_and_time.append(convert_datetime(i))
-
-with g_Col2:
-    st.header("Metrological")
-    # temperature
-    chart_data = pd.DataFrame(
-        {
-            "Temperature in K": m_temperatures,
-            "Date": m_date_and_time
-        }
-    )
-    st.line_chart(chart_data, x="Date", y="Temperature in K")
-    # humidity
-    chart_data = pd.DataFrame(
-        {
-            "Humidity %": m_humidity,
-            "Date": m_date_and_time
-        }
-    )
-    st.line_chart(chart_data, x="Date", y="Humidity %")
-with g_Col1:
-    st.header("Sensors")
-    # temperature
-    chart_data = pd.DataFrame(
-        {
-            "Temperature in C": temp_list,
-            "Date": s_time
-        }
-    )
-    st.line_chart(chart_data, x="Date", y="Temperature in C")
-    # humidity
-    chart_data = pd.DataFrame(
-        {
-            "Humidity %": humi_list,
-            "Date": s_time
-        }
-    )
-    st.line_chart(chart_data, x="Date", y="Humidity %")
-    # soil moisture
-    chart_data = pd.DataFrame(
-        {
-            "Soil Moisture %": s_soil_list,
-            "Date": s_time
-        }
-    )
-    st.line_chart(chart_data, x="Date", y="Soil Moisture %")
+# Readings from saved metro data
+# last_saved_date = wt.last_weather_time(location)  # last saved time of the weather data
+# st.write("Last saved date: ", last_saved_date)
+# time_diff = datetime.now(pytz.timezone('Asia/Colombo')) - last_saved_date
+# if time_diff.hour >= 24:
+#     today_summary = wt.get_weather_summary(Latitude, Longitude, api_key)
+#     wt.save_weather(today_summary)
 
 # Irrigation Results
 st.header("Results")
@@ -483,3 +442,70 @@ elif current_water_level > 0:
     st.write("The shortage amount : ", round(current_water_level, 3), "Litres")
 st.markdown(irr_state, unsafe_allow_html=True)
 print(s_time)
+
+
+# Nutrients readings
+nitrogen_sensor = 12
+phosphorus_sensor = 15
+potassium_sensor = 18
+nitrogen_recommend, phosphorus_recommend, potassium_recommend = npk.get_crop_npk(plant_type, plantation_days)
+nitrogen_decision = npk.nitrogen_decision(nitrogen_recommend, nitrogen_sensor)
+phosphorus_decision = npk.nitrogen_decision(phosphorus_recommend, phosphorus_sensor)
+potassium_decision = npk.nitrogen_decision(potassium_recommend, potassium_sensor)
+st.header("Nutrients")
+st.header("NPKs")
+st.write("Nitrogen : ", nitrogen_decision)
+st.write("Phosphorus : ", phosphorus_decision)
+st.write("Potassium : ", potassium_decision)
+
+g_Col1, g_Col2 = st.columns(2)
+m_date_and_time = []
+for i in m_date_time:
+    m_date_and_time.append(convert_datetime(i))
+
+with g_Col2:
+    st.header("Metrological")
+    # temperature
+    chart_data = pd.DataFrame(
+        {
+            "Temperature in K": m_temperatures,
+            "Date": m_date_and_time
+        }
+    )
+    st.line_chart(chart_data, x="Date", y="Temperature in K")
+    # humidity
+    chart_data = pd.DataFrame(
+        {
+            "Humidity %": m_humidity,
+            "Date": m_date_and_time
+        }
+    )
+    st.line_chart(chart_data, x="Date", y="Humidity %")
+with g_Col1:
+    st.header("Sensors")
+    # temperature
+    chart_data = pd.DataFrame(
+        {
+            "Temperature in C": temp_list,
+            "Date": s_time
+        }
+    )
+    st.line_chart(chart_data, x="Date", y="Temperature in C")
+    # humidity
+    chart_data = pd.DataFrame(
+        {
+            "Humidity %": humi_list,
+            "Date": s_time
+        }
+    )
+    st.line_chart(chart_data, x="Date", y="Humidity %")
+    # soil moisture
+    chart_data = pd.DataFrame(
+        {
+            "Soil Moisture %": s_soil_list,
+            "Date": s_time
+        }
+    )
+    st.line_chart(chart_data, x="Date", y="Soil Moisture %")
+
+

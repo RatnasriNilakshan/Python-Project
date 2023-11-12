@@ -102,6 +102,7 @@
 #     # Connection failed
 #     print("Connection to InfluxDB failed:", str(e))
 
+
 # import influxdb_client
 # from influxdb_client.client.write_api import SYNCHRONOUS
 #
@@ -198,7 +199,7 @@
 # for table in result:
 #     for record in table.records:
 #         results.append((record.get_field(), record.get_value()))
-import streamlit as st
+# import streamlit as st
 # import pandas as pd
 # import numpy as np
 #
@@ -225,50 +226,190 @@ import streamlit as st
 # print("UTC Time:", utc_time)
 # print("Sri Lanka Standard Time (SLST):", sri_lanka_time)
 
+#
+# import requests
+#
+# import converttime as conv_date
 
+# def get_weather_data(latitude, longitude, api_key):
+#     # Make a GET request to the OpenWeatherMap API
+#     # response = requests.get(f'http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}')
+#     response = requests.get(f'https://api.openweathermap.org/data/3.0/onecall/day_summary?lat={latitude}&lon={longitude}&date'
+#                             f'=2023-10-27&tz=+05:30&appid={api_key}')
+#
+#
+#     # Check if the request was successful (status code 200)
+#     if response.status_code == 200:
+#         # Extract the weather data from the response
+#         weather_data = response.json()
+#         # print(weather_data)
+#
+#         # Access specific weather information
+#         # longitude = weather_data['coord']['lon']
+#         # latitude = weather_data['coord']['lat']
+#         # dateandtime = conv_date.convert_datetime(weather_data['dt'])
+#         # temperature = weather_data['main']['temp']
+#         # temperature_min = weather_data['main']['temp_min']
+#         # temperature_max = weather_data['main']['temp_max']
+#         # humidity = weather_data['main']['humidity']
+#         # wind_speed = weather_data['wind']['speed']
+#         # description = weather_data['weather'][0]['description']
+#         # clouds = weather_data['clouds']['all']
+#         # sunrise = conv_date.convert_datetime(weather_data['sys']['sunrise'])
+#         # sunset = conv_date.convert_datetime(weather_data['sys']['sunset'])
+#         # pressure = weather_data['main']['pressure']
+#         # sea_level = weather_data['main']['sea_level']
+#         # grnd_level = weather_data['main']['grnd_level']
+#
+#         # Return the weather information
+#         return weather_data
+#             # longitude, latitude, dateandtime, temperature, temperature_min, temperature_max, humidity, wind_speed, \
+#             # description, clouds, sunrise, sunset, pressure, sea_level, grnd_level
+#     else:
+#         print('Failed to retrieve weather data.')
+#         return None, None, None
+#
+#
+# one_call_data = get_weather_data(6.8412384, 80.0034457, '8d4e7706e24a9f1fc59b0b30b7964887')
+# print(one_call_data)
+
+# for influx write
+# import os, time
+# from influxdb_client_3 import InfluxDBClient3, Point
+#
+# # Define your InfluxDB Cloud credentials
+# token = "Xl1akcWonZAgMksXlOOizTmNa_jhJ_zWGBwy_KahCAHcH14C9d9iE3ISnDEDBoPnZP9d32oA2KEnm725E2VMxg=="
+# org = "farm_project"
+# bucket = "farm_project"
+# url = "https://us-east-1-1.aws.cloud2.influxdata.com"  # Replace with your InfluxDB Cloud URL
+#
+# host = "https://us-east-1-1.aws.cloud2.influxdata.com"
+#
+# client = InfluxDBClient3(host=host, token=token, org=org)
+#
+# database = "farm_data"
+#
+#
+#
+# print("Complete. Return to the InfluxDB UI.")
+
+
+# import datetime
+# import time
+# from influxdb_client import InfluxDBClient
+# import requests
+# from influxdb_client_3 import InfluxDBClient3, Point
+# from datetime import datetime
+# import pytz
+#
+# token = "Xl1akcWonZAgMksXlOOizTmNa_jhJ_zWGBwy_KahCAHcH14C9d9iE3ISnDEDBoPnZP9d32oA2KEnm725E2VMxg=="
+# org = "farm_project"
+# bucket = "farm_project"
+# host = "https://us-east-1-1.aws.cloud2.influxdata.com"
+# client = InfluxDBClient3(host=host, token=token, org=org)
+# database = "farm_data"
+#
+#
+# def time_conversion(time_in_utc):
+#     # Input UTC timestamp
+#     utc_timestamp = time_in_utc
+#
+#     # Convert to a datetime object
+#     utc_time = datetime.fromisoformat(utc_timestamp)
+#     utc_time = utc_time.replace(tzinfo=pytz.UTC)
+#
+#     # Convert to Sri Lanka Standard Time (Asia/Colombo time zone)
+#     sri_lanka_time = utc_time.astimezone(pytz.timezone('Asia/Colombo'))
+#     #formatted_date_time = sri_lanka_time.strftime('%Y-%m-%d %H:%M:%S')
+#
+#     return sri_lanka_time
+#
+#
+# def last_weather_time(rec_time, tag_key):
+#     try:
+#         # bucket = "farm_data"
+#         url = "https://us-east-1-1.aws.cloud2.influxdata.com"
+#         # Query script
+#         # query = (f'from(bucket: "farm_data") |> range(start: {rec_time}) |> filter(fn: (r) => r._measurement == '
+#         #          f'"sensors")')
+#         query = f'''
+#               from(bucket: "farm_data")
+#                 |> range(start: {rec_time})
+#                 |> filter(fn: (r) => r._measurement == "open_weather")
+#                 |> filter(fn:(r) => r.location == "{tag_key}")
+#         '''
+#
+#         with InfluxDBClient(url=url, token=token, org=org) as client:
+#             query_api = client.query_api()
+#             tables = query_api.query(query)
+#             # print("Query", tables)
+#             # temp_mean, hum_mean, sea_level, shine_time, wind_speed, latitude, u_day, u_night
+#
+#             last_time = []
+#
+#             for table in tables:
+#                 for record in table.records:
+#                     # get tne timestamp of record
+#                     last_time.append(record.get_time())
+#
+#             return time_conversion(str(max(last_time)))
+#     except Exception as e:
+#         # Connection failed
+#         print("Connection to failed:", str(e))
+#         return None
+#
+#
+# print(datetime.now(pytz.timezone('Asia/Colombo')) - last_weather_time(-1, "Homagama"))
+import datetime
+from influxdb_client import InfluxDBClient
+from influxdb_client_3 import InfluxDBClient3, Point
+from datetime import datetime
+import pytz
+import weather_thread as wt
+import time
 import requests
 
-import converttime as conv_date
+token = "Xl1akcWonZAgMksXlOOizTmNa_jhJ_zWGBwy_KahCAHcH14C9d9iE3ISnDEDBoPnZP9d32oA2KEnm725E2VMxg=="
+org = "farm_project"
+bucket = "farm_project"
+url = "https://us-east-1-1.aws.cloud2.influxdata.com"
+database = "farm_data"
+
+api_key = '8d4e7706e24a9f1fc59b0b30b7964887'  # API key to openweather
+def last_weather_time(tag_key):
+    try:
+        # bucket = "farm_data"
+        # Query script
+        # query = (f'from(bucket: "farm_data") |> range(start: {rec_time}) |> filter(fn: (r) => r._measurement == '
+        #          f'"sensors")')
+        query = f'''
+              from(bucket: "farm_data")
+                |> range(start: -2d)
+                |> filter(fn: (r) => r._measurement == "open_weather_save")
+
+        '''
+
+        with InfluxDBClient(url=url, token=token, org=org) as client:
+            query_api = client.query_api()
+            tables = query_api.query(query)
+            print("Query", tables)
+
+            last_time = []
+
+            for table in tables:
+                for record in table.records:
+                    last_time.append(record.get_time())
 
 
-def get_weather_data(latitude, longitude, api_key):
-    # Make a GET request to the OpenWeatherMap API
-    # response = requests.get(f'http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}')
-    response = requests.get(f'https://api.openweathermap.org/data/3.0/onecall/day_summary?lat={latitude}&lon={longitude}&date'
-                            f'=2023-10-27&tz=+05:30&appid={api_key}')
 
+            print("Last time saves :", last_time)
 
-    # Check if the request was successful (status code 200)
-    if response.status_code == 200:
-        # Extract the weather data from the response
-        weather_data = response.json()
-        # print(weather_data)
+            return max(last_time)
+    except Exception as e:
+        # Connection failed
+        print("Connection to failed:", str(e))
+        return None
 
-        # Access specific weather information
-        # longitude = weather_data['coord']['lon']
-        # latitude = weather_data['coord']['lat']
-        # dateandtime = conv_date.convert_datetime(weather_data['dt'])
-        # temperature = weather_data['main']['temp']
-        # temperature_min = weather_data['main']['temp_min']
-        # temperature_max = weather_data['main']['temp_max']
-        # humidity = weather_data['main']['humidity']
-        # wind_speed = weather_data['wind']['speed']
-        # description = weather_data['weather'][0]['description']
-        # clouds = weather_data['clouds']['all']
-        # sunrise = conv_date.convert_datetime(weather_data['sys']['sunrise'])
-        # sunset = conv_date.convert_datetime(weather_data['sys']['sunset'])
-        # pressure = weather_data['main']['pressure']
-        # sea_level = weather_data['main']['sea_level']
-        # grnd_level = weather_data['main']['grnd_level']
-
-        # Return the weather information
-        return weather_data
-            # longitude, latitude, dateandtime, temperature, temperature_min, temperature_max, humidity, wind_speed, \
-            # description, clouds, sunrise, sunset, pressure, sea_level, grnd_level
-    else:
-        print('Failed to retrieve weather data.')
-        return None, None, None
-
-
-one_call_data = get_weather_data(6.8412384, 80.0034457, '8d4e7706e24a9f1fc59b0b30b7964887')
-print(one_call_data)
+# today_summary = wt.get_weather_summary(6.844, 80.0024, api_key)
+# wt.save_weather(today_summary)
+print(last_weather_time("Homagama"))
