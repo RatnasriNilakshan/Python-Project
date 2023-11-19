@@ -1,6 +1,6 @@
 from influxdb_client import InfluxDBClient
 import numpy as np
-
+import calibrated_values as cv
 from datetime import datetime
 import pytz
 from numpy import average
@@ -94,12 +94,31 @@ def real_time_weather(rec_time, tag_key):
             light = light_outlier(light)
             # soil = soil_outlier(soil).interpolate(method="linear", inplace=True)
             pressure = pressure_outlier(pressure)
-
-            temperature = round(sum(temp) / len(temp), 2)
-            humidity = round(sum(humi) / len(humi), 2)
+            # temperature calibrated value
+            temperature = sum(temp) / len(temp)
+            print("Temperature before calibration: ", temperature)
+            temperature = round((temperature - 1.184817421919231) / 0.9915188746604908, 2)
+            print("Temperature after calibration: ", temperature)
+            # humidity calibrated value
+            humidity = sum(humi) / len(humi)
+            print("Humidity before calibration: ", humidity)
+            a = -0.01631986
+            b = 2.78605521
+            c = -54.52545034843425
+            humidity = round(cv.second_order(humidity, a, b, c), 2)
+            print("Humidity after calibration: ", humidity)
             # soil_moisture = round(soil[-1], 3)
-            light_intensity = round(sum(light) / len(light), 3)
-            pressure = round((sum(pressure) / len(pressure) / 1000), 3)
+            # Light intensity calibrated value
+            light_intensity = sum(light) / len(light)
+            print("Light before calibration: ", light_intensity)
+            light_intensity = round(1.4978395975992413 * light_intensity - 293.23609409636083, 3)
+            print("Light after calibration: ", light_intensity)
+            # pressure calibrated value
+            pressure = round(sum(pressure) / len(pressure), 3)
+            print("Pressure before calibration: ", pressure)
+            pressure = round((pressure + 348.95271755180147) / 1.006443696772644 / 1000, 3)
+            print("pressure after calibration: ", pressure)
+            # wind speed adjustments
             wind_speed = round(average(wind), 3)
 
             return temperature, humidity, light_intensity, temp, humi, time, pressure, wind_speed

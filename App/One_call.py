@@ -3,22 +3,9 @@ import requests
 import converttime as conv_date
 from datetime import datetime, timezone, timedelta
 
-start_date = datetime(2023, 11, 1)
-end_date = datetime(2023, 11, 14)
 
-current_date = start_date
-# while current_date <= end_date:
-#     timestamp = int(current_date.timestamp())
-#     print(f"{current_date.strftime('%Y-%m-%d')} - Unix Timestamp: {timestamp}")
-#     # Convert Unix timestamp to date and time
-#     dt_object = datetime.utcfromtimestamp(timestamp).replace(tzinfo=timezone.utc)
-#     formatted_date_time = dt_object.strftime('%Y-%m-%d %H:%M:%S %Z')
-#
-#     # Print the result
-#     print("Date and Time:", formatted_date_time)
-#
-#
-#     current_date += timedelta(days=1)
+current_date = datetime.today()
+
 timestamp = int(current_date.timestamp())
 def get_weather_data(latitude, longitude, api_key, timestamp):
     # Make a GET request to the OpenWeatherMap API
@@ -107,24 +94,28 @@ def write_to_influxdb(longitude, latitude, dateandtime,temperature, humidity, wi
     except Exception as e:
         print(f"Failed to write data to InfluxDB: {str(e)}")
 
+def has_today_data():
+    query = f'from(bucket: "{INFLUXDB_BUCKET}") |> range(start: -1d) |> filter(fn: (r) => r._measurement == "{INFLUXDB_MEASUREMENT}")'
+    result = client.query_api().query(query, org=INFLUXDB_ORG)
+    return len(result) > 0
+
+
 def main():
     try:
         while True:
-            longitude, latitude, dateandtime, temperature, humidity, wind_speed, sunrise, sunset, pressure = (
-                get_weather_data(6.8412384, 80.0034457, '8d4e7706e24a9f1fc59b0b30b7964887', timestamp))
-            # print(f"Temperature: {temperature}°C, Humidity: {humidity}%, Light Intensity: {light_intensity} lux, Pressure: {pressure} hPa")
-
-            if temperature > 5:  # Check if the sensor is working
-                success = write_to_influxdb(longitude, latitude, dateandtime, temperature, humidity, wind_speed, sunrise, sunset, pressure)
+            if not has_today_data():
+                # Today's data is not present in InfluxDB, retrieve and save it
+                longitude, latitude, dateandtime, temperature, humidity, wind_speed, sunrise, sunset, pressure = (
+                    get_weather_data(6.8412384, 80.0034457, '8d4e7706e24a9f1fc59b0b30b7964887', timestamp))
+                success = write_to_influxdb(longitude, latitude, dateandtime, temperature, humidity, wind_speed,
+                                            sunrise, sunset, pressure)
                 if success:
                     print("Data written to InfluxDB successfully")
                 else:
                     print(f"Failed to write data to InfluxDB: {client}")
 
-            time.sleep(600)  # Delay for 10 minutes (600 seconds)
-
+            # time.sleep(1800)  # Delay for 30 minutes (600 seconds)
+            return None
     except KeyboardInterrupt:
         print("Program terminated by user.")
-
-if __name__ == "__main__":
-    main()
+        return None

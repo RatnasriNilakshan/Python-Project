@@ -16,7 +16,9 @@ import m_ETo as m_ETo
 import s_ETo as s_ETo
 import datetime
 import sensor_weather as s_w
+import open_weather_past as o_w_p
 from datetime import datetime, timedelta
+import One_call
 
 # def get_current_location():
 #     # Initialize the geocoder
@@ -34,6 +36,8 @@ from datetime import datetime, timedelta
 
 # Get the current location
 # Latitude, Longitude = get_current_location()
+
+One_call.main()
 
 api_key = '8d4e7706e24a9f1fc59b0b30b7964887'  # API key to openweather
 Plant_varieties = ["Chilli", "Tomato"]  # The plant categories
@@ -135,6 +139,8 @@ combined_date_irr = datetime.combine(last_irrigation_date, last_irrigation_time)
 time_diff_irr = round((combined_date_irr - datetime.now()).total_seconds() / (60 * 60 * 24))
 print("Irrigation time difference : ", time_diff_irr)
 print("Irrigation Combine date : ", combined_date_irr)
+
+
 # combined_date_fer = datetime.combine(last_fertilization_date, last_fertilization_time)
 # time_diff_fer = round((combined_date_fer - datetime.now()).total_seconds() / (60 * 60 * 24))
 
@@ -275,7 +281,7 @@ if Latitude is not None and Longitude is not None:
     kc = get_crop_coefficient('App\\cropcoefficient.csv')
     # Calculate crop water requirement
     m_crw = round(m_eto * kc, 3)
-    st.header("Weather data")
+    st.header(f"Predicted data for coming {m_days_count} day(s)")
     # create three columns to show the irrigation related details with metro data
     m_Col1, m_Col2, m_Col3 = st.columns(3)
     # fill in those three columns with respective metrics or KPIs
@@ -314,11 +320,56 @@ if Latitude is not None and Longitude is not None:
     # st.write("Average Humidity:", mean_humidity, "%")
     # st.write("Rainfalls:", total_rainfall, "mm")
 
+    st.header("Data from Open weather")
+    (ow_temp, ow_humidity, ow_pressure, ow_sun_shine, ow_wind_speed, ow_u_day, ow_u_night, ow_temperature_in_C,
+     ow_sunshine) = (o_w_p.open_weather_past(f"{time_diff_irr}d"))
+    # Evapotranspiration from sensor
+    ow_eto = m_ETo.calculate_et0(ow_temp, ow_humidity, ow_pressure, ow_sun_shine, ow_wind_speed, Latitude, ow_u_day,
+                                 ow_u_night)
+    # Calculate crop water requirement for sensor
+    ow_crw = round(ow_eto * kc, 3)
+    print("S_CRW :", ow_crw)
+    # create three columns to show irrigation related details with sensors data
+    ow_Col1, ow_Col2, ow_Col3 = st.columns(3)
+    with ow_Col1:
+        st.header("Temperature 🌡️")
+        st.write(ow_temperature_in_C, "℃")
+
+        st.header("Sunrise 🌥️")
+        st.write(ow_sunshine)
+
+        st.header("Total Evapotranspiration ♨")
+        ow_tvw = ow_crw * filed_area * time_diff_irr
+        if ow_tvw < 0:
+            water_level = "Evapotranspiration of "
+            ow_tvw_abs = abs(ow_tvw)
+        else:
+            water_level = "Remains of "
+            ow_tvw_abs = abs(ow_tvw)
+        st.write(water_level, round(ow_tvw_abs, 3), "Litres")
+
+    with ow_Col2:
+        st.header("Humidity 🫧")
+        st.write(ow_humidity, "%")
+
+        st.header("Wind 💨")
+        st.write(ow_wind_speed, "m/s")
+
+    with ow_Col3:
+        st.header("Crop Evapotranspiration 🌫")
+        st.write(ow_crw, "mm/day")
+
+        st.header("Atmospheric pressure 😶‍🌫")
+        st.write(round(ow_pressure / 10, 3), "kPa")
+
     st.header("Data from Sensors")
     (s_temp, s_humidity, s_light, temp_list, humi_list, s_time, s_pressure, s_wind_speed) = \
         (s_w.real_time_weather(f"{time_diff_irr}d", weather_station))
+    # wind speed adjustment
+    if s_wind_speed == 0:
+        s_wind_speed = (mean_wind_speed + ow_wind_speed) / 2
     # Evapotranspiration from sensor
-    s_eto = s_ETo.calculate_s_et0(temp_list, humi_list, s_pressure, mean_wind_speed, s_light, time_diff_irr)
+    s_eto = s_ETo.calculate_s_et0(temp_list, humi_list, s_pressure, s_wind_speed, s_light, time_diff_irr)
     # Calculate crop water requirement for sensor
     s_crw = round(s_eto * kc, 3)
     print("S_CRW :", s_crw)
@@ -349,9 +400,6 @@ if Latitude is not None and Longitude is not None:
         st.write(s_wind_speed, "m/s")
 
     with s_Col3:
-        st.header("Sunrise 🌥️")
-        st.write(s_light, "lux")
-
         st.header("Crop Evapotranspiration 🌫")
         st.write(s_crw, "mm/day")
 
@@ -443,7 +491,6 @@ elif current_water_level > 0:
 st.markdown(irr_state, unsafe_allow_html=True)
 print(s_time)
 
-
 g_Col1, g_Col2 = st.columns(2)
 m_date_and_time = []
 for i in m_date_time:
@@ -485,7 +532,6 @@ with g_Col1:
         }
     )
     st.line_chart(chart_data, x="Date", y="Humidity %")
-
 
 # Nutrients readings
 # Soil density = 1490 Kg / m3

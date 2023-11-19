@@ -146,12 +146,14 @@ def get_adjustment_factor(csv_file, rs, rh_max, u_day, u_night):
     u_ratio = u_day / u_night
     u_ratio = get_nearest_u(u_ratio)
     u_day = get_nearest_uday(u_day)
+    print("adjustment factor : ", str(u_day) + ',' + str(u_ratio), str(rs) + ',' + str(rh_mean))
     return df.at[str(u_day) + ',' + str(u_ratio), str(rs) + ',' + str(rh_mean)]
 
 
 def calculate_et0(temp_mean, hum_mean, sea_level, shine_time, wind_speed, latitude, u_day, u_night):
     # eto = eto.calculate_Et0(mean_temperature, mean_humidity, mean_sea_level, sun_shine_time,
     #                         mean_wind_speed, Latitude, u_day, u_night)
+    print(temp_mean, hum_mean, sea_level, shine_time, wind_speed, latitude, u_day, u_night)
     # Unit conversion
     temp_mean = kelvin_to_celsius(temp_mean)
     # Altitude calculation
