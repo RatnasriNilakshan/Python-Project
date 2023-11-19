@@ -4,7 +4,7 @@ import requests
 
 from datetime import datetime
 from datetime import timedelta
-
+import m_ETo
 
 # Make a GET request to the OpenWeatherMap API
 def get_avg_weather(lat, lon, api_key):
@@ -76,9 +76,12 @@ def find_avg_weather(json_data, days):
         count += 1
     u_day = sum(u_day_avg) / len(u_day_avg)
     u_night = sum(u_night_avg) / len(u_night_avg)
+    temperature =[]
+    for tem in temperatures:
+        temperature.append(m_ETo.kelvin_to_celsius(tem))
 
     return mean_temperature, mean_humidity, total_rainfall, mean_wind_speed, sun_shine, sun_shine_time, \
-        mean_sea_level, u_day, u_night, mean_pre_level, temperatures, humidity, wind_speed, date_time
+        mean_sea_level, u_day, u_night, mean_pre_level, temperature, humidity, wind_speed, date_time
 
 # temp_mean, hum_mean, sea_level, shine_time, wind_speed, latitude, u_day, u_night
 

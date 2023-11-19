@@ -89,7 +89,7 @@ current_weather_check = st.sidebar.checkbox("Current Weather", value=True)
 refresh_current_weather = st.sidebar.button("Refresh 🔄")
 # sensor node selection
 sensors = ["FYP0001", "FYP0002"]
-weather_station = ["FYP0003"]
+weather_station = "FYP0002"
 sensor_node = st.sidebar.selectbox("Selection the sensor node", sensors)
 location = st.sidebar.selectbox("Select your area", cities, index=0)  # Define the location
 m_days_count = st.sidebar.selectbox("Select number of days (future)", m_days,
@@ -122,21 +122,21 @@ last_irrigated_amount = st.sidebar.number_input("Enter the amount of water irrig
 
 # Show the fertilization menu
 # if show_fertilization:
-st.sidebar.header("Fertilization Details")
-col_fer_1, col_fer_2 = st.sidebar.columns(2)
-with col_fer_1:
-    last_fertilization_date = st.date_input("Enter the last fertilization date",
-                                            current_date - timedelta(days=5))
-with col_fer_2:
-    last_fertilization_time = st.time_input("Enter the last fertilization time")
+# st.sidebar.header("Fertilization Details")
+# col_fer_1, col_fer_2 = st.sidebar.columns(2)
+# with col_fer_1:
+#     last_fertilization_date = st.date_input("Enter the last fertilization date",
+#                                             current_date - timedelta(days=5))
+# with col_fer_2:
+#     last_fertilization_time = st.time_input("Enter the last fertilization time")
 
 # Date and time difference calculations
 combined_date_irr = datetime.combine(last_irrigation_date, last_irrigation_time)
 time_diff_irr = round((combined_date_irr - datetime.now()).total_seconds() / (60 * 60 * 24))
 print("Irrigation time difference : ", time_diff_irr)
 print("Irrigation Combine date : ", combined_date_irr)
-combined_date_fer = datetime.combine(last_fertilization_date, last_fertilization_time)
-time_diff_fer = round((combined_date_fer - datetime.now()).total_seconds() / (60 * 60 * 24))
+# combined_date_fer = datetime.combine(last_fertilization_date, last_fertilization_time)
+# time_diff_fer = round((combined_date_fer - datetime.now()).total_seconds() / (60 * 60 * 24))
 
 
 # show_irrigation = st.sidebar.button("Irrigation")
@@ -281,7 +281,7 @@ if Latitude is not None and Longitude is not None:
     # fill in those three columns with respective metrics or KPIs
     with m_Col1:
         st.header("Temperature 🌡️")
-        st.write(mean_temperature, "K")
+        st.write(round(m_ETo.kelvin_to_celsius(mean_temperature), 2), "℃")
 
         st.header("Rainfall 🌧️")
         st.write(total_rainfall, "mm")
@@ -315,8 +315,8 @@ if Latitude is not None and Longitude is not None:
     # st.write("Rainfalls:", total_rainfall, "mm")
 
     st.header("Data from Sensors")
-    s_temp, s_humidity, s_soil_moisture, s_light, temp_list, humi_list, s_time, s_pressure, s_soil_list = (
-        s_w.real_time_weather(f"{time_diff_irr}d", weather_station))
+    (s_temp, s_humidity, s_light, temp_list, humi_list, s_time, s_pressure, s_wind_speed) = \
+        (s_w.real_time_weather(f"{time_diff_irr}d", weather_station))
     # Evapotranspiration from sensor
     s_eto = s_ETo.calculate_s_et0(temp_list, humi_list, s_pressure, mean_wind_speed, s_light, time_diff_irr)
     # Calculate crop water requirement for sensor
@@ -328,8 +328,8 @@ if Latitude is not None and Longitude is not None:
         st.header("Temperature 🌡️")
         st.write(s_temp, "℃")
 
-        st.header("Soil Moisture 🥔️")
-        st.write(s_soil_moisture, "%")
+        st.header("Light Intensity ☀")
+        st.write(s_light, "lux")
 
         st.header("Total Evapotranspiration ♨")
         s_tvw = s_crw * filed_area * time_diff_irr
@@ -346,7 +346,7 @@ if Latitude is not None and Longitude is not None:
         st.write(s_humidity, "%")
 
         st.header("Wind 💨")
-        st.write(mean_wind_speed, "m/s")
+        st.write(s_wind_speed, "m/s")
 
     with s_Col3:
         st.header("Sunrise 🌥️")
@@ -444,20 +444,6 @@ st.markdown(irr_state, unsafe_allow_html=True)
 print(s_time)
 
 
-# Nutrients readings
-nitrogen_sensor = 12
-phosphorus_sensor = 15
-potassium_sensor = 18
-nitrogen_recommend, phosphorus_recommend, potassium_recommend = npk.get_crop_npk(plant_type, plantation_days)
-nitrogen_decision = npk.nitrogen_decision(nitrogen_recommend, nitrogen_sensor)
-phosphorus_decision = npk.nitrogen_decision(phosphorus_recommend, phosphorus_sensor)
-potassium_decision = npk.nitrogen_decision(potassium_recommend, potassium_sensor)
-st.header("Nutrients")
-st.header("NPKs")
-st.write("Nitrogen : ", nitrogen_decision)
-st.write("Phosphorus : ", phosphorus_decision)
-st.write("Potassium : ", potassium_decision)
-
 g_Col1, g_Col2 = st.columns(2)
 m_date_and_time = []
 for i in m_date_time:
@@ -499,13 +485,21 @@ with g_Col1:
         }
     )
     st.line_chart(chart_data, x="Date", y="Humidity %")
-    # soil moisture
-    chart_data = pd.DataFrame(
-        {
-            "Soil Moisture %": s_soil_list,
-            "Date": s_time
-        }
-    )
-    st.line_chart(chart_data, x="Date", y="Soil Moisture %")
 
 
+# Nutrients readings
+# Soil density = 1490 Kg / m3
+# average root depth 0.3 m
+# Soil weight per m2 = 447 Kg
+nitrogen_sensor = 8
+phosphorus_sensor = 5
+potassium_sensor = 8
+nitrogen_recommend, phosphorus_recommend, potassium_recommend = npk.get_crop_npk(plant_type, plantation_days)
+nitrogen_decision = npk.nitrogen_decision(nitrogen_recommend, nitrogen_sensor)
+phosphorus_decision = npk.nitrogen_decision(phosphorus_recommend, phosphorus_sensor)
+potassium_decision = npk.nitrogen_decision(potassium_recommend, potassium_sensor)
+st.header("Nutrients")
+st.header("NPKs")
+st.write("Nitrogen : ", nitrogen_decision)
+st.write("Phosphorus : ", phosphorus_decision)
+st.write("Potassium : ", potassium_decision)

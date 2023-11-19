@@ -52,7 +52,7 @@ poly_errors = np.std(actual_pressure - model.predict(X_poly))
 plt.errorbar(actual_pressure, model.predict(X_poly), yerr=poly_errors, fmt='none', color='red', ecolor='mistyrose', capsize=3, label='Polynomial Regression Error')
 
 plt.xlabel('Actual Pressure (Pa)')
-plt.ylabel('Sensor Reading (Pa)')
+plt.ylabel('Pressure Reading in Sensor (Pa)')
 plt.title('Pressure Calibration')
 plt.legend()
 plt.show()

@@ -3,6 +3,7 @@ import numpy as np
 
 from datetime import datetime
 import pytz
+from numpy import average
 
 
 def time_conversion(time_in_utc):
@@ -28,10 +29,12 @@ def time_conversion(time_in_utc):
 
 
 def real_time_weather(rec_time, tag_key):
+    print(rec_time)
+    print(tag_key)
     try:
         # bucket = "farm_data"
         org = "farm_project"
-        token = "Xl1akcWonZAgMksXlOOizTmNa_jhJ_zWGBwy_KahCAHcH14C9d9iE3ISnDEDBoPnZP9d32oA2KEnm725E2VMxg=="
+        token = "7g5omMxTeVgK0ND-cknWiJACb-Y5bJ8TFJiyhQlzbX3cWyPbR0azuO7lLgoHY8eEnQkERoj6pymmG42l3OgybQ=="
         url = "https://us-east-1-1.aws.cloud2.influxdata.com"
         # Query script
         # query = (f'from(bucket: "farm_data") |> range(start: {rec_time}) |> filter(fn: (r) => r._measurement == '
@@ -51,9 +54,10 @@ def real_time_weather(rec_time, tag_key):
             temp = []
             humi = []
             light = []
-            soil = []
+            # soil = []
             pressure = []
             time = []
+            wind = []
 
             for table in tables:
                 for record in table.records:
@@ -64,8 +68,10 @@ def real_time_weather(rec_time, tag_key):
                         light.append(field_value)
                     elif field_name == "humidity":
                         humi.append(field_value)
-                    elif field_name == "soil_moisture":
-                        soil.append(field_value)
+                    # elif field_name == "soil_moisture":
+                    #     soil.append(field_value)
+                    elif field_name == "wind_speed":
+                        wind.append(field_value)
                     elif field_name == "pressure":
                         pressure.append(field_value)
                     elif field_name == "temperature":
@@ -76,25 +82,27 @@ def real_time_weather(rec_time, tag_key):
 
             print("Temp :", max(temp), min(temp))
             print("Humi : ", max(humi), min(humi))
-            print("Soil Moisture :", max(soil), min(soil))
+            # print("Soil Moisture :", max(soil), min(soil))
             print("Light :", max(light), min(light))
             print("Pressure :", max(pressure), min(pressure))
-            print("Soil moisture : ", soil)
+            # print("Soil moisture : ", soil)
+            print("Wind speed : ", round(average(wind), 3))
             # print("time:", time)
 
-            temp = temp_outlier(temp).interpolate(method="linear", inplace=True)
-            humi = humi_outlier(humi).interpolate(method="linear", inplace=True)
-            light = light_outlier(light).interpolate(method="linear", inplace=True)
-            soil = soil_outlier(soil).interpolate(method="linear", inplace=True)
-            pressure = pressure_outlier(pressure).interpolate(method="linear", inplace=True)
+            temp = temp_outlier(temp)
+            humi = humi_outlier(humi)
+            light = light_outlier(light)
+            # soil = soil_outlier(soil).interpolate(method="linear", inplace=True)
+            pressure = pressure_outlier(pressure)
 
             temperature = round(sum(temp) / len(temp), 2)
             humidity = round(sum(humi) / len(humi), 2)
-            soil_moisture = round(soil[-1], 3)
+            # soil_moisture = round(soil[-1], 3)
             light_intensity = round(sum(light) / len(light), 3)
             pressure = round((sum(pressure) / len(pressure) / 1000), 3)
+            wind_speed = round(average(wind), 3)
 
-            return temperature, humidity, soil_moisture, light_intensity, temp, humi, time, pressure, soil
+            return temperature, humidity, light_intensity, temp, humi, time, pressure, wind_speed
     except Exception as e:
         # Connection failed
         print("Connection to failed:", str(e))

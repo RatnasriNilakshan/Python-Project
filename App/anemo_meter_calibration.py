@@ -80,7 +80,7 @@ poly_errors = np.std(Anemo_meter - model.predict(X_poly))
 # plt.errorbar(humidity_probe, humidity_sensor, yerr=linear_errors, fmt='none', color='blue', ecolor='lightblue', capsize=3, label='Linear Regression Error')
 plt.errorbar(Anemo_meter, model.predict(X_poly), yerr=poly_errors, fmt='none', color='red', ecolor='mistyrose', capsize=3, label='Polynomial Regression Error')
 
-plt.xlabel('Anemometer (m/s)')
+plt.xlabel('Wind speed (m/s)')
 plt.ylabel('Generated volt (mV)')
 plt.title('Anemometer Calibration')
 plt.legend()
