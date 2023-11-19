@@ -75,7 +75,7 @@ def get_weather_data(latitude, longitude, api_key, timestamp):
     else:
         print('Failed to retrieve weather data.')
         return None, None, None
-from influxdb_client import InfluxDBClient, Point
+from influxdb_client import InfluxDBClient, Point, WriteOptions
 from datetime import datetime
 import time
 
@@ -95,24 +95,14 @@ client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG
 
 def write_to_influxdb(longitude, latitude, dateandtime,temperature, humidity, wind_speed, sunrise, sunset, pressure):
     try:
-        json_body = [
-            {
-                "measurement": INFLUXDB_MEASUREMENT,
-                "tags": {"UUID": UUID, "location": "Homagama"},
-                "fields": {
-                    "longitude": longitude,
-                    "latitude": latitude,
-                    "dateandtime": dateandtime,
-                    "temperature": temperature,
-                    "humidity": humidity,
-                    "wind_speed": wind_speed,
-                    "sunrise": sunrise,
-                    "sunset": sunset,
-                    "pressure": pressure,
-                },
-            }
-        ]
-        client.write_points(json_body)
+        point = Point(INFLUXDB_MEASUREMENT).tag("UUID", UUID).tag("location", "Homagama").field(
+            "longitude", longitude).field("latitude", latitude).field("dateandtime", dateandtime).field("temperature",
+                                                                                                        temperature).field(
+            "humidity", humidity).field("wind_speed", wind_speed).field("sunrise", sunrise).field("sunset",
+                                                                                                  sunset).field(
+            "pressure", pressure)
+        write_api = client.write_api(write_options=WriteOptions(batch_size=1, flush_interval=1_000))
+        write_api.write(INFLUXDB_BUCKET, INFLUXDB_ORG, point)
         print("Data written to InfluxDB successfully")
     except Exception as e:
         print(f"Failed to write data to InfluxDB: {str(e)}")
