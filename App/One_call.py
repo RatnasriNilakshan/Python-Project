@@ -113,9 +113,9 @@ def main():
                     print("Data written to InfluxDB successfully")
                 else:
                     print(f"Failed to write data to InfluxDB: {client}")
-
             # time.sleep(1800)  # Delay for 30 minutes (600 seconds)
             return None
+
     except KeyboardInterrupt:
         print("Program terminated by user.")
         return None

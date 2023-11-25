@@ -25,11 +25,13 @@ def nitrogen_decision(nitrogen_recommend, nitrogen_sensor):
 
     # Check if the nitrogen value is within the acceptable range
     if lower_limit <= nitrogen_sensor <= upper_limit:
-        return "Monitor"
+        return "Monitor", 0
     elif nitrogen_sensor > upper_limit:
-        return "No need to fertilize"
+        return "No need to fertilize", 0
     else:
-        return "Fertilize"
+        fertiliser_diff = nitrogen_recommend - nitrogen_sensor
+        amount_to_one_square = fertiliser_diff * 420
+        return "Fertilize", amount_to_one_square
 
 
 def phosphorus_decision(phosphorus_recommend, phosphorus_sensor):
@@ -42,11 +44,13 @@ def phosphorus_decision(phosphorus_recommend, phosphorus_sensor):
 
     # Check if the nitrogen value is within the acceptable range
     if lower_limit <= phosphorus_sensor <= upper_limit:
-        return "Monitor"
+        return "Monitor", 0
     elif phosphorus_sensor > upper_limit:
-        return "No need to fertilize"
+        return "No need to fertilize", 0
     else:
-        return "Fertilize"
+        fertiliser_diff = phosphorus_recommend - phosphorus_sensor
+        amount_to_one_square = fertiliser_diff * 420
+        return "Fertilize", amount_to_one_square
 
 
 def potassium_decision(potassium_recommend, potassium_sensor):
@@ -59,8 +63,10 @@ def potassium_decision(potassium_recommend, potassium_sensor):
 
     # Check if the nitrogen value is within the acceptable range
     if lower_limit <= potassium_sensor <= upper_limit:
-        return "Monitor"
+        return "Monitor", 0
     elif potassium_sensor > upper_limit:
-        return "No need to fertilize"
+        return "No need to fertilize", 0
     else:
-        return "Fertilize"
+        fertiliser_diff = potassium_recommend - potassium_sensor
+        amount_to_one_square = fertiliser_diff * 420
+        return "Fertilize", amount_to_one_square

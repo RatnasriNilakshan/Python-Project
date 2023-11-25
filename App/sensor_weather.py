@@ -88,7 +88,8 @@ def real_time_weather(rec_time, tag_key):
             # print("Soil moisture : ", soil)
             print("Wind speed : ", round(average(wind), 3))
             # print("time:", time)
-
+            print("length of light : ", len(light))
+            print("length of temp :", len(temp))
             temp = temp_outlier(temp)
             humi = humi_outlier(humi)
             light = light_outlier(light)
@@ -102,10 +103,10 @@ def real_time_weather(rec_time, tag_key):
             # humidity calibrated value
             humidity = sum(humi) / len(humi)
             print("Humidity before calibration: ", humidity)
-            a = -0.01631986
-            b = 2.78605521
-            c = -54.52545034843425
-            humidity = round(cv.second_order(humidity, a, b, c), 2)
+            humidity = round((humidity - 2.4511113020988304) / 0.7777099342975464, 2)
+            if humidity > 100:
+                humidity = humidity = sum(humi) / len(humi)
+                humidity = round(humidity, 2)
             print("Humidity after calibration: ", humidity)
             # soil_moisture = round(soil[-1], 3)
             # Light intensity calibrated value
@@ -119,7 +120,10 @@ def real_time_weather(rec_time, tag_key):
             pressure = round((pressure + 348.95271755180147) / 1.006443696772644 / 1000, 3)
             print("pressure after calibration: ", pressure)
             # wind speed adjustments
-            wind_speed = round(average(wind), 3)
+            coefficients = [6.815215, -28.85605239, 17.79369809, 182.68658296758696]
+            y_value = average(wind)
+            wind_speed = round(cv.third_order_real_roots(coefficients, y_value), 3)
+            print("sensor data :",temperature, humidity, light_intensity, temp, humi, time, pressure, wind_speed)
 
             return temperature, humidity, light_intensity, temp, humi, time, pressure, wind_speed
     except Exception as e:

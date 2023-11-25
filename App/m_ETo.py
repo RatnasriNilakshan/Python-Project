@@ -163,29 +163,32 @@ def calculate_et0(temp_mean, hum_mean, sea_level, shine_time, wind_speed, latitu
 
     # saturation vapour pressure
     ea = get_saturation_vapour_pressure('App\\saturation_vapour_pressure.csv', temp_mean)
-
+    print("ea : ", ea)
     # Calculate saturation vapor pressure (ed)
     ed = ea * hum_mean / 100
-
+    print("ed : ", ed)
     #  Weighting Factor for the effect of radiation on ET0
     w = get_weighting_factor('App\\temp_vs_altitude.csv', temp_mean, altitude)
-
+    print("weighting factor : ", w)
     # sun shine mean
     n = shine_time / 3600
     n_max = get_max_sunshine('App\\sunshine_hours.csv', latitude)
     n_n = n / n_max
-    # print(n, n_max, n_n)
-    fn_n = get_effect_of_sunshine_ratio_on_radiation('App\\sunshine_ratio_on_longwave_radiation.csv', n_n)
-    ra = get_extra_terrestrial_radiation('App\\extra_terrestrial_radiation.csv', latitude)
-    rs = (0.25 + (0.50 * n / n_max)) * ra
-    rns = (1 - 0.25) * rs
 
+    fn_n = get_effect_of_sunshine_ratio_on_radiation('App\\sunshine_ratio_on_longwave_radiation.csv', n_n)
+    print("Fn_n :", fn_n)
+    ra = get_extra_terrestrial_radiation('App\\extra_terrestrial_radiation.csv', latitude)
+    print("Ra :", ra)
+    rs = (0.25 + (0.50 * n / n_max)) * ra
+    print("Rs :", rs)
+    rns = (1 - 0.25) * rs
+    print("Rns :", rns)
     ft = get_effect_of_temp_on_radiation('App\\temperature_on_longwave_radiation.csv', temp_mean)
     fed = get_effect_of_vapour_pressure_on_radiation('App\\vapour_pressure_on_longwave_radiation.csv', ed)
 
     rnl = ft * fed * fn_n
     rn = rns - rnl
-    # print ("rn : ", rn)
+    print("Rn : ", rn)
 
     # Calculate wind speed at 2 meters (u2)
     u2_numerator = 4.87
@@ -199,13 +202,13 @@ def calculate_et0(temp_mean, hum_mean, sea_level, shine_time, wind_speed, latitu
     # Wind related function
     fun_u = wind_speed_2m * 86.4
     wind_fun = 0.27 * (1 + fun_u / 100)
-
+    print("Wind fun:", wind_fun)
     c = get_adjustment_factor('App\\adjustment_factor.csv', rs, hum_mean, u_day, u_night)
-
+    print("Adjustment factor:",c)
     # Calculate reference evapotranspiration (ET0)
     et0 = c * (w * rn + (1 - w) * wind_fun * (ea - ed))
     et0 = round(et0, 2)
-
+    print("M_ETo :", et0)
     # Adjust ET0 for vegetation height
 
     return et0

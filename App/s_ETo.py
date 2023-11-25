@@ -25,11 +25,20 @@ def calculate_s_et0(temperature, humidity, atmospheric_pressure, wind_speed, lig
     temp_max = max(temperature)
     temp_mean = sum(temperature) / len(temperature)
     print("temperatures :", temp_int, temp_last, temp_min, temp_max, temp_mean)
-
+    # temp_int = 29.5
+    # temp_last = 31.2
+    # temp_min = 28.2
+    # temp_max = 31.5
+    # temp_mean = 29.71
     # humidity array
     humidity_min = min(humidity)
     humidity_max = max(humidity)
-
+    print("Humidity min and max: ", humidity_min, humidity_max)
+    # humidity_min = 80
+    # humidity_max = 90
+    # atmospheric_pressure = 100.05
+    # wind_speed = 1.45
+    # light_intensity = 12000
     # slope of saturation vapour pressure in kPa `C^-1
     delta = (4098 * (0.6108 * math.exp((17.27 * temp_mean) / (temp_mean + 237.3)))
              / (temp_mean + 237.3) ** 2)

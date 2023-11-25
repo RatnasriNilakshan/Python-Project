@@ -14,7 +14,7 @@ p_aoac = df['P_aoac'].values
 slope, intercept, r_value, p_value, std_err = linregress(p_aoac, p_sensor)
 
 # Polynomial Regression
-degree = 4  # Change the degree as needed
+degree = 1  # Change the degree as needed
 poly = PolynomialFeatures(degree=degree)
 X_poly = poly.fit_transform(p_aoac.reshape(-1, 1))
 
@@ -83,7 +83,7 @@ k_aoac = df['K_aoac'].values
 slope, intercept, r_value, p_value, std_err = linregress(k_aoac, k_sensor)
 
 # Polynomial Regression
-degree = 4  # Change the degree as needed
+degree = 1  # Change the degree as needed
 poly = PolynomialFeatures(degree=degree)
 X_poly = poly.fit_transform(k_aoac.reshape(-1, 1))
 
@@ -152,7 +152,7 @@ n_aoac = df['N_aoac'].values[-6:]
 slope, intercept, r_value, p_value, std_err = linregress(n_aoac, n_sensor)
 
 # Polynomial Regression
-degree = 4  # Change the degree as needed
+degree = 1  # Change the degree as needed
 poly = PolynomialFeatures(degree=degree)
 X_poly = poly.fit_transform(n_aoac.reshape(-1, 1))
 
