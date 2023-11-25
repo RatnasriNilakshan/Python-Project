@@ -4,6 +4,7 @@ import calibrated_values as cv
 from datetime import datetime
 import pytz
 from numpy import average
+import pandas as pd
 
 
 def time_conversion(time_in_utc):
@@ -16,7 +17,7 @@ def time_conversion(time_in_utc):
 
     # Convert to Sri Lanka Standard Time (Asia/Colombo time zone)
     sri_lanka_time = utc_time.astimezone(pytz.timezone('Asia/Colombo'))
-    formatted_date_time = sri_lanka_time.strftime('%Y-%m-%d %H:%M:%S')
+    formatted_date_time = sri_lanka_time.strftime('%Y-%m-%d %H:%M')
     # # Extract the date and time components
     # year = sri_lanka_time.year
     # month = sri_lanka_time.month
@@ -80,6 +81,48 @@ def real_time_weather(rec_time, tag_key):
                         sl_time = time_conversion(str(record.get_time()))
                         time.append(sl_time)
 
+            light = np.pad(light, (0, len(temp) - len(light)), 'constant')
+            time = pd.to_datetime(time, format='%Y-%m-%d %H:%M')
+            # Example list
+            data = list(zip(
+                light,
+                humi,
+                wind,
+                pressure,
+                temp,
+                time
+            ))
+
+            # Define column names
+            columns = ["light",
+                       "humi",
+                       "wind",
+                       "pressure",
+                       "temp",
+                       "time"]
+
+            # Create a Pandas DataFrame
+            df = pd.DataFrame(data, columns=columns)
+            # df.to_csv("original;.csv", index=False)
+            # Set 'time' as the index
+            df.set_index('time', inplace=True)
+
+            # Create a new DataFrame with a complete time range
+            full_time_range = pd.date_range(start=df.index.min(), end=df.index.max(), freq='5T')
+            full_df = pd.DataFrame(index=full_time_range)
+            # Merge the two DataFrames
+            merged_df = pd.merge(full_df, df, left_index=True, right_index=True, how='outer')
+            # Interpolate missing values
+            interpolated_df = merged_df.interpolate()
+            # Reset the index
+            interpolated_df.reset_index(inplace=True)
+
+            wind = interpolated_df["wind"].tolist()
+            humi = interpolated_df["humi"].tolist()
+            light = interpolated_df["light"].tolist()
+            temp = interpolated_df["temp"].tolist()
+            pressure = interpolated_df["pressure"].tolist()
+
             print("Temp :", max(temp), min(temp))
             print("Humi : ", max(humi), min(humi))
             # print("Soil Moisture :", max(soil), min(soil))
@@ -126,6 +169,7 @@ def real_time_weather(rec_time, tag_key):
             print("sensor data :",temperature, humidity, light_intensity, temp, humi, time, pressure, wind_speed)
 
             return temperature, humidity, light_intensity, temp, humi, time, pressure, wind_speed
+
     except Exception as e:
         # Connection failed
         print("Connection to failed:", str(e))
@@ -261,3 +305,6 @@ def soil_outlier(soil):
             soil[i] = upper_bound
 
     return soil
+
+
+real_time_weather("-3d", "FYP0002")

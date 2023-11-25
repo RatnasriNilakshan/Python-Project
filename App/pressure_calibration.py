@@ -7,7 +7,7 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
 
 # Load data
-df = pd.read_csv('G:\\UOC FOT\\8th-Semester\\IA 4050 Research Project\\pressure_calibration.csv')
+df = pd.read_csv('..\\pressure_calibration.csv')
 actual_pressure = df["Pressure"].values
 sensor_reading = df["Sensor"].values
 

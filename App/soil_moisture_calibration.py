@@ -7,7 +7,7 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
 
 # Replace 'your_data.csv' with the path to your dataset
-df = pd.read_csv('G:\\UOC FOT\\8th-Semester\\IA 4050 Research Project\\Python Project\\soil_moisture.csv')
+df = pd.read_csv('..\\soil_moisture.csv')
 soil_sensor = df['sensor'].values
 moisture_reading = df['moisture'].values
 print(moisture_reading)

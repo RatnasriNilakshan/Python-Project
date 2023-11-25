@@ -6,7 +6,7 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
 
 # Replace 'your_data.csv' with the path to your dataset
-df = pd.read_csv('G:\\UOC FOT\\8th-Semester\\IA 4050 Research Project\\Python Project\\npk_calibration.csv')
+df = pd.read_csv('..\\npk_calibration.csv')
 
 # Phosphorus calibration
 p_sensor = df['P_sensor'].values

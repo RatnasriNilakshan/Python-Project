@@ -7,7 +7,7 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
 
 # Load data
-df = pd.read_csv('G:\\UOC FOT\\8th-Semester\\IA 4050 Research Project\\Python Project\\humi_calibration.csv')
+df = pd.read_csv('..\\humi_calibration.csv')
 humidity_sensor = df['humidity_sensor'].values
 humidity_probe = df['humidity_probe'].values
 

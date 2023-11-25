@@ -219,9 +219,10 @@ def tomato_moisture(moisture_level):
     return recommendation_sim.output
 
 
-def soil_moisture(rec_time, tag_key):
+def soil_moisture(rec_time, tag_key,block):
     print(rec_time)
     print(tag_key)
+    print(block)
     try:
         # bucket = "farm_data"
         org = "farm_project"
@@ -233,8 +234,9 @@ def soil_moisture(rec_time, tag_key):
         query = f'''
               from(bucket: "farm_data")
                 |> range(start: {rec_time})
-                |> filter(fn: (r) => r._measurement == "sensors")
+                |> filter(fn: (r) => r._measurement == "farm_block")
                 |> filter(fn:(r) => r.UUID == "{tag_key}")
+                |> filter(fn:(r) => r.block_number == "{block}")
         '''
 
         with InfluxDBClient(url=url, token=token, org=org) as client:
@@ -259,9 +261,10 @@ def soil_moisture(rec_time, tag_key):
         return None
 
 
-def soil_NPK(rec_time, tag_key):
+def soil_NPK(rec_time, tag_key, block):
     print(rec_time)
     print(tag_key)
+    print(block)
     try:
         # bucket = "farm_data"
         org = "farm_project"
@@ -273,8 +276,9 @@ def soil_NPK(rec_time, tag_key):
         query = f'''
               from(bucket: "farm_data")
                 |> range(start: {rec_time})
-                |> filter(fn: (r) => r._measurement == "sensors")
+                |> filter(fn: (r) => r._measurement == "farm_block")
                 |> filter(fn:(r) => r.UUID == "{tag_key}")
+                |> filter(fn:(r) => r.block_number == "{block}")
         '''
 
         with InfluxDBClient(url=url, token=token, org=org) as client:
@@ -303,7 +307,7 @@ def soil_NPK(rec_time, tag_key):
             phosphorus = sum(P) / len(P)
 
             potassium = sum(K) / len(K)
-
+            print(nitrogen, phosphorus, potassium)
             return nitrogen, phosphorus, potassium
     except Exception as e:
         # Connection failed

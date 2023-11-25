@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 # For example, running this (by clicking run or pressing Shift+Enter) will list all files under the input directory
 
 
-data = pd.read_csv("G:\\UOC FOT\\8th-Semester\\IA 4050 Research Project\\influxdata_2023-10-29T05_35_44Z.csv")
+data = pd.read_csv("..\\influxdata_2023-10-29T05_35_44Z.csv")
 
 data.head()
 data.shape
@@ -26,4 +26,4 @@ data_knn['soil_moisture'].interpolate(method="linear", inplace=True)
 data_knn['temperature'].interpolate(method="linear", inplace=True)
 
 data_knn.head(100)
-data_knn.to_csv('G:\\UOC FOT\\8th-Semester\\IA 4050 Research Project\\influxdata_filled_NA.csv', index=False)
+data_knn.to_csv('..\\influxdata_filled_NA.csv', index=False)

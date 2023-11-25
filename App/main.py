@@ -19,6 +19,7 @@ import sensor_weather as s_w
 import open_weather_past as o_w_p
 from datetime import datetime, timedelta
 import One_call
+import soil_moisture_fuzzy as soil_readings
 
 # def get_current_location():
 #     # Initialize the geocoder
@@ -113,6 +114,7 @@ current_date = datetime.now().date()
 new_date = current_date - timedelta(days=7)
 planted_date = st.sidebar.date_input("Enter the planting date", value=new_date)
 plantation_days = (current_date - planted_date).days
+block = st.sidebar.number_input("Enter the block number", 1)
 # Show the irrigation menu
 # if show_irrigation:
 st.sidebar.header("Irrigation Details")
@@ -509,7 +511,14 @@ if current_water_level <= 0:
         # a = a + 1
 elif current_water_level > 0:
     irr_state = '''<span style="color: red;">You need to irrigate</span>'''  # red text for irrigate
-    st.write("The shortage amount : ", round(current_water_level, 3), "Litres")
+    soil_moisture = soil_readings.soil_moisture("-1d", "PORTABLE01", block)
+    if plant_type == "Tomato":
+        moisture_recommended = soil_readings.tomato_moisture(soil_moisture)
+    else:
+        moisture_recommended = soil_readings.chilli_moisture(soil_moisture)
+    print("Recommended moisture :",moisture_recommended['recommendation'])
+    st.write("Recommendation to Irrigate : ", round(moisture_recommended['recommendation'], 2), "%")
+    st.write("The shortage amount : ", round(current_water_level * moisture_recommended['recommendation']/100, 3), "Litres")
 st.markdown(irr_state, unsafe_allow_html=True)
 print(s_time)
 
@@ -559,9 +568,11 @@ print(s_time)
 # Soil density = 1490 Kg / m3
 # average root depth 0.3 m
 # Soil weight per m2 = 447 Kg
-nitrogen_sensor = 1
-phosphorus_sensor = 1
-potassium_sensor = 1
+print("plantaion day :", plantation_days)
+N, P, K = soil_readings.soil_NPK("-1d", "PORTABLE01", block)
+nitrogen_sensor = N
+phosphorus_sensor = P
+potassium_sensor = K
 nitrogen_recommend, phosphorus_recommend, potassium_recommend = npk.get_crop_npk(plant_type, plantation_days)
 nitrogen_decision, N_amount = npk.nitrogen_decision(nitrogen_recommend, nitrogen_sensor)
 phosphorus_decision, P_amount = npk.nitrogen_decision(phosphorus_recommend, phosphorus_sensor)

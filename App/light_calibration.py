@@ -7,7 +7,7 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
 
 # Replace 'your_data.csv' with the path to your dataset
-df = pd.read_csv('G:\\UOC FOT\\8th-Semester\\IA 4050 Research Project\\Python Project\\light_calibration.csv')
+df = pd.read_csv('..\\light_calibration.csv')
 light_sensor = df['sensor'].values
 light_meter = df['light_meter'].values
 print(light_meter)

@@ -6,7 +6,7 @@ from scipy.stats import linregress, skew, kurtosis
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
 
-df = pd.read_csv("G:\\UOC FOT\\8th-Semester\\IA 4050 Research Project\\Python Project\\anemometer_calibration.csv")
+df = pd.read_csv("..\\anemometer_calibration.csv")
 # # Sample data (replace with your actual data)
 # anemo_reading = np.array(df["Anemo_meter"].tolist())
 # volts = np.array(df["SD"].tolist())

@@ -1,3 +1,4 @@
+import pandas as pd
 from influxdb_client import InfluxDBClient
 
 from datetime import datetime, timedelta
@@ -5,7 +6,7 @@ import pytz
 from numpy import average
 
 import m_ETo
-
+import converttime
 
 def time_conversion(time_in_utc):
     # Input UTC timestamp
@@ -17,7 +18,7 @@ def time_conversion(time_in_utc):
 
     # Convert to Sri Lanka Standard Time (Asia/Colombo time zone)
     sri_lanka_time = utc_time.astimezone(pytz.timezone('Asia/Colombo'))
-    formatted_date_time = sri_lanka_time.strftime('%Y-%m-%d %H:%M:%S')
+    formatted_date_time = sri_lanka_time.strftime('%Y-%m-%d %H:%M')
     # # Extract the date and time components
     # year = sri_lanka_time.year
     # month = sri_lanka_time.month
@@ -81,6 +82,57 @@ def open_weather_past(rec_time):
                         sl_time = time_conversion(str(record.get_time()))
                         time.append(sl_time)
 
+            # Example list
+            data = list(zip(
+                dateandtime,
+                humi,
+                wind,
+                sunrise,
+                sunset,
+                pressure,
+                temp
+            ))
+
+            # Define column names
+            columns = ["dateandtime",
+                       "humi",
+                       "wind",
+                       "sunrise",
+                       "sunset",
+                       "pressure",
+                       "temp"
+                       ]
+
+            # Create a Pandas DataFrame
+            df = pd.DataFrame(data, columns=columns)
+            # Convert 'dateandtime' to datetime format
+            df['dateandtime'] = pd.to_datetime(df['dateandtime'], unit='s')
+
+            # Sort the DataFrame by 'dateandtime'
+            df = df.sort_values(by='dateandtime')
+            # df.to_csv("original_past+-.csv", index=False)
+            # Set 'time' as the index
+            df.set_index('dateandtime', inplace=True)
+
+            # Create a new DataFrame with a complete time range
+            full_time_range = pd.date_range(start=df.index.min(), end=df.index.max(), freq='1D')
+            full_df = pd.DataFrame(index=full_time_range)
+            # Merge the two DataFrames
+            merged_df = pd.merge(full_df, df, left_index=True, right_index=True, how='outer')
+            # Interpolate missing values
+            interpolated_df = merged_df.interpolate()
+            # Reset the index
+            interpolated_df.reset_index(inplace=True)
+            # interpolated_df.to_csv("original_past+-interpolated.csv", index=False)
+            wind = interpolated_df["wind"].tolist()
+            humi = interpolated_df["humi"].tolist()
+            sunset = interpolated_df["sunset"].tolist()
+            sunrise = interpolated_df["sunrise"].tolist()
+            temp = interpolated_df["temp"].tolist()
+            pressure = interpolated_df["pressure"].tolist()
+
+
+
             # Sun shine time in seconds
             sun_shine_time = max(sunset) - max(sunrise)
             # Convert time difference to a timedelta object
@@ -114,3 +166,4 @@ def open_weather_past(rec_time):
         # Connection failed
         print("Connection to failed:", str(e))
         return None
+
